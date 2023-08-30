@@ -12,9 +12,14 @@ const config: HardhatUserConfig = {
       chainId: 31337,
     },
     mumbai: {
-      url: process.env.QUICKNODE_MUMBAI,
+      url: process.env.ALCHEMY_MUMBAI,
       accounts: [process.env.DEV_PRIVATE_KEY || ''],
       chainId: 80001,
+    },
+    basegoerli: {
+      url: process.env.ALCHEMY_BASEGOERLI,
+      accounts: [process.env.DEV_PRIVATE_KEY || ''],
+      chainId: 84531,
     },
   },
   etherscan: {
