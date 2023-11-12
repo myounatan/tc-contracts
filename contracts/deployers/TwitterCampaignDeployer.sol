@@ -12,7 +12,7 @@ contract TwitterCampaignDeployer is BaseDeployer {
     function deployCampaign(
         uint256 _campaignId,
         address _creator,
-        CampaignLib.CampaignType _campaignType,
+        //CampaignLib.CampaignType _campaignType,
         IAdminBeacon _adminBeacon
     ) external virtual onlyFactory returns (address contractAddress) {
         TwitterCampaign campaignContract = new TwitterCampaign(

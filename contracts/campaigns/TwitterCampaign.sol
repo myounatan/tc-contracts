@@ -52,9 +52,11 @@ contract TwitterCampaign is BaseCampaign {
 
     string public tweetString;
 
-    TweetRewardInfo[] public tweetRewardInfo;
+    // TweetRewardInfo[] public tweetRewardInfo;
+    mapping(TwitterRewardMetric => uint256) public tokensPerMetric;
 
-    TwitterSecurityInfo[] public twitterSecurityInfo;
+    // TwitterSecurityInfo[] public twitterSecurityInfo;
+    mapping(TwitterSecurityMetric => uint256) public securityInfo;
 
     mapping(uint256 => TweetInfo) public lastTweetInfoRewarded; // tweetId -> TweetInfo
 
@@ -109,11 +111,17 @@ contract TwitterCampaign is BaseCampaign {
             tweetString = _tweetString;
 
             for (uint256 i = 0; i < _tweetRewardInfo.length; i++) {
-                tweetRewardInfo.push(_tweetRewardInfo[i]);
+                // tweetRewardInfo.push(_tweetRewardInfo[i]);
+                tokensPerMetric[_tweetRewardInfo[i].metric] = _tweetRewardInfo[
+                    i
+                ].tokensPerMetric;
             }
 
             for (uint256 i = 0; i < _twitterSecurityInfo.length; i++) {
-                twitterSecurityInfo.push(_twitterSecurityInfo[i]);
+                // twitterSecurityInfo.push(_twitterSecurityInfo[i]);
+                securityInfo[
+                    _twitterSecurityInfo[i].metric
+                ] = _twitterSecurityInfo[i].data;
             }
         }
 
@@ -126,8 +134,8 @@ contract TwitterCampaign is BaseCampaign {
             rewardInfo.rewardToken,
             ownerUserId,
             tweetString,
-            tweetRewardInfo,
-            twitterSecurityInfo
+            _tweetRewardInfo,
+            _twitterSecurityInfo
         );
     }
 

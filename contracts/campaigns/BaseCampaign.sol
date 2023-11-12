@@ -11,6 +11,14 @@ import "../CampaignLib.sol";
 import "../admin/IAdminBeacon.sol";
 
 abstract contract BaseCampaign is Ownable, Pausable, ReentrancyGuard {
+    // state
+
+    enum CampaignState {
+        SETUP,
+        ACTIVE,
+        ENDED
+    }
+
     // reward info
 
     enum RewardType {
@@ -48,8 +56,6 @@ abstract contract BaseCampaign is Ownable, Pausable, ReentrancyGuard {
 
     uint256 public campaignId;
 
-    bool public isActive;
-
     address public creator; // also campaign owner
 
     bool isSetup = false;
@@ -73,6 +79,7 @@ abstract contract BaseCampaign is Ownable, Pausable, ReentrancyGuard {
     error NotEnoughRewardsLeft();
     error FailedToSendRewards(address participant, uint256 amount);
     error FailedToWithdrawFunds();
+    error LiabilityTimeNotPassed();
 
     // modifiers
 
@@ -127,8 +134,6 @@ abstract contract BaseCampaign is Ownable, Pausable, ReentrancyGuard {
         CampaignInfo memory _campaignInfo,
         string memory _rewardString
     ) internal {
-        isActive = true;
-
         campaignInfo = _campaignInfo;
 
         rewardInfo.rewardString = _rewardString;
@@ -137,7 +142,7 @@ abstract contract BaseCampaign is Ownable, Pausable, ReentrancyGuard {
     function _rewardNative(
         address participant,
         uint256 _tokensRewarded
-    ) internal {
+    ) internal virtual {
         // check if there are enough tokens left to reward
         if (_tokensRewarded > rewardInfo.rewardsLeft)
             revert NotEnoughRewardsLeft();
@@ -156,42 +161,103 @@ abstract contract BaseCampaign is Ownable, Pausable, ReentrancyGuard {
         if (!success) revert FailedToSendRewards(participant, _tokensRewarded);
     }
 
+    function _withdrawNativeAmountTo(
+        address _to,
+        uint256 _amount
+    ) internal virtual nonZeroAmount(_amount) {
+        (bool success, ) = payable(_to).call{value: _amount}("");
+        if (!success) revert FailedToWithdrawFunds();
+    }
+
+    function _endCampaignIfFundsZero() internal virtual {
+        if (rewardInfo.rewardsLeft == 0) {
+            campaignInfo.endTime = block.timestamp;
+        }
+    }
+
     // function _rewardERC20
 
     // public functions
 
-    function getCampaignInfo() public view returns (CampaignInfo memory) {
+    function getState() public view virtual returns (CampaignState) {
+        if (block.timestamp < campaignInfo.startTime) {
+            return CampaignState.SETUP;
+        }
+
+        if (
+            block.timestamp >= campaignInfo.startTime &&
+            block.timestamp < campaignInfo.endTime
+        ) {
+            return CampaignState.ACTIVE;
+        }
+
+        return CampaignState.SETUP;
+    }
+
+    function getCampaignInfo()
+        public
+        view
+        virtual
+        returns (CampaignInfo memory)
+    {
         return campaignInfo;
     }
 
-    function getRewardInfo() public view returns (RewardInfo memory) {
+    function getRewardInfo() public view virtual returns (RewardInfo memory) {
         return rewardInfo;
     }
 
-    function getCampaignAndRewardInfo()
+    function getFullState()
         public
         view
-        returns (CampaignInfo memory, RewardInfo memory)
+        virtual
+        returns (CampaignState, CampaignInfo memory, RewardInfo memory)
     {
-        return (campaignInfo, rewardInfo);
+        return (getState(), campaignInfo, rewardInfo);
     }
+
+    // public onlyAdmin
+
+    // only allowed to call this method 30 days after the campaign has ended, for liability reasons
+    function withdrawAdminNative(address _to) public onlyAdmin {
+        if (block.timestamp < campaignInfo.endTime + 30 days)
+            revert LiabilityTimeNotPassed();
+
+        _withdrawNativeAmountTo(_to, address(this).balance);
+    }
+
+    // function withdrawAdminERC20
 
     // public onlyCreator
 
     function depositNative()
         public
         payable
+        virtual
         onlyCreator
         nonZeroAmount(msg.value)
     {
+        // TODO: if campaign is over, don't allow deposits
+
         rewardInfo.rewardsLeft += msg.value;
     }
 
-    function withdrawNative() public onlyCreator {
-        (bool success, ) = payable(msg.sender).call{
-            value: address(this).balance
-        }("");
-        if (!success) revert FailedToWithdrawFunds();
+    function restartCampaign(
+        uint256 _newEndTime
+    ) public payable virtual onlyCreator nonZeroAmount(msg.value) {
+        campaignInfo.endTime = _newEndTime;
+    }
+
+    function withdrawNative(uint256 _amount) public onlyCreator {
+        _withdrawNativeAmountTo(msg.sender, _amount);
+
+        _endCampaignIfFundsZero();
+    }
+
+    function withdrawAllNative() public onlyCreator {
+        _withdrawNativeAmountTo(msg.sender, address(this).balance);
+
+        _endCampaignIfFundsZero();
     }
 
     // function depositERC20
