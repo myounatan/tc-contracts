@@ -11,15 +11,15 @@ const config: HardhatUserConfig = {
       url: 'http://127.0.0.1:8545/',
       chainId: 31337,
     },
-    mumbai: {
-      url: process.env.ALCHEMY_MUMBAI,
-      accounts: [process.env.DEV_PRIVATE_KEY || ''],
-      chainId: 80001,
-    },
-    basegoerli: {
+    goerli: {
       url: process.env.ALCHEMY_BASEGOERLI,
       accounts: [process.env.DEV_PRIVATE_KEY || ''],
       chainId: 84531,
+    },
+    sepolia: { // same as basesepolia
+      url: process.env.QUICKNODE_BASESEPOLIA,
+      accounts: [process.env.DEV_PRIVATE_KEY || ''],
+      chainId: 84532,
     },
   },
   etherscan: {

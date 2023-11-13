@@ -3,6 +3,7 @@
 pragma solidity ^0.8.18;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import "./CampaignLib.sol";
 
@@ -15,7 +16,7 @@ import "./campaigns/DiscordCampaign.sol";
 
 // import "hardhat/console.sol";
 
-contract CampaignFactory is Ownable {
+contract CampaignFactory is Ownable, ReentrancyGuard {
     // campaign info
 
     struct CampaignContract {
@@ -61,18 +62,19 @@ contract CampaignFactory is Ownable {
 
     function _recordNewCampaign(
         address _contractAddress,
-        uint256 _campaignId,
         CampaignLib.CampaignType _campaignType
     ) internal returns (CampaignContract memory) {
+        uint256 campaignId = numCampaigns++;
+
         CampaignContract memory newCampaign = CampaignContract({
             contractAddress: _contractAddress,
-            campaignId: _campaignId,
+            campaignId: campaignId,
             campaignType: _campaignType
         });
 
-        campaigns[_campaignId] = newCampaign;
+        campaigns.push(newCampaign);
 
-        emit CampaignCreated(_contractAddress, _campaignId, _campaignType);
+        emit CampaignCreated(_contractAddress, campaignId, _campaignType);
 
         return newCampaign;
     }
@@ -82,8 +84,8 @@ contract CampaignFactory is Ownable {
     function deployTwitterCampaign(
         address _creator,
         IBaseDeployer _deployer
-    ) external onlyAdmin returns (CampaignContract memory campaign) {
-        uint256 campaignId = campaigns.length + 1;
+    ) external nonReentrant {
+        uint256 campaignId = numCampaigns;
 
         address contractAddress = _deployer.deployCampaign(
             campaignId,
@@ -91,18 +93,14 @@ contract CampaignFactory is Ownable {
             adminBeacon
         );
 
-        campaign = _recordNewCampaign(
-            contractAddress,
-            campaignId,
-            CampaignLib.CampaignType.TWITTER
-        );
+        _recordNewCampaign(contractAddress, CampaignLib.CampaignType.TWITTER);
     }
 
     function deployDiscordCampaign(
         address _creator,
         IBaseDeployer _deployer
-    ) external onlyAdmin returns (CampaignContract memory campaign) {
-        uint256 campaignId = campaigns.length + 1;
+    ) external nonReentrant {
+        uint256 campaignId = numCampaigns;
 
         address contractAddress = _deployer.deployCampaign(
             campaignId,
@@ -110,10 +108,6 @@ contract CampaignFactory is Ownable {
             adminBeacon
         );
 
-        campaign = _recordNewCampaign(
-            contractAddress,
-            campaignId,
-            CampaignLib.CampaignType.DISCORD
-        );
+        _recordNewCampaign(contractAddress, CampaignLib.CampaignType.DISCORD);
     }
 }

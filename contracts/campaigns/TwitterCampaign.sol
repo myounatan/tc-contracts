@@ -45,9 +45,6 @@ contract TwitterCampaign is BaseCampaign {
 
     // variables
 
-    CampaignLib.CampaignType public override campaignType =
-        CampaignLib.CampaignType.TWITTER;
-
     uint256 public ownerUserId;
 
     string public tweetString;
@@ -90,7 +87,9 @@ contract TwitterCampaign is BaseCampaign {
         uint256 _campaignId,
         address _creator,
         IAdminBeacon _adminBeacon
-    ) BaseCampaign(_campaignId, _creator, _adminBeacon) {}
+    ) BaseCampaign(_campaignId, _creator, _adminBeacon) {
+        campaignType = CampaignLib.CampaignType.TWITTER;
+    }
 
     // owner setup
 
@@ -164,7 +163,7 @@ contract TwitterCampaign is BaseCampaign {
         );
     }
 
-    // function setupERC20
+    // function setupERC20(...) external payable onlyOwner setupOnce
 
     function claimRewardNativeTo(
         address participant,

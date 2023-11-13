@@ -126,6 +126,8 @@ abstract contract BaseCampaign is Ownable, Pausable, ReentrancyGuard {
         campaignId = _campaignId;
         creator = _creator;
         adminBeacon = _adminBeacon;
+
+        _transferOwnership(_creator);
     }
 
     // internal functions
@@ -176,6 +178,13 @@ abstract contract BaseCampaign is Ownable, Pausable, ReentrancyGuard {
     }
 
     // function _rewardERC20
+
+    // override transferOwnership so they can only renounce
+    // TODO: in the future, make this a backend admin only method
+    //       that also accepts a twitter user id as new owner
+    function transferOwnership(
+        address newOwner
+    ) public virtual override onlyOwner {}
 
     // public functions
 
