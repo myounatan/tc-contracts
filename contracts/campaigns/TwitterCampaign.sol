@@ -77,7 +77,8 @@ contract TwitterCampaign is BaseCampaign {
         address indexed wallet,
         uint256 tweetId,
         uint256 tokensRewarded,
-        TweetInfo rewardedTweetInfo
+        TweetInfo rewardedTweetInfo,
+        string rewardStringUsed
     );
 
     // constructor
@@ -170,7 +171,8 @@ contract TwitterCampaign is BaseCampaign {
         uint256 _tweetId,
         TweetInfo memory _currentTweetInfo,
         TweetInfo memory _rewardedTweetInfo,
-        uint256 _tokensRewarded
+        uint256 _tokensRewarded,
+        string memory _rewardStringUsed
     ) public nonReentrant onlyAdmin {
         _rewardNative(participant, _tokensRewarded);
 
@@ -182,7 +184,8 @@ contract TwitterCampaign is BaseCampaign {
             participant,
             _tweetId,
             _tokensRewarded,
-            _rewardedTweetInfo
+            _rewardedTweetInfo,
+            _rewardStringUsed
         );
     }
 }

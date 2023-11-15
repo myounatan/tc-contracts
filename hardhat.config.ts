@@ -23,7 +23,20 @@ const config: HardhatUserConfig = {
     },
   },
   etherscan: {
-    apiKey: process.env.MUMBAI_SCAN_KEY
+    apiKey: {
+      'mumbai': `${process.env.MUMBAI_SCAN_KEY}`,
+      'base-goerli': "PLACEHOLDER_STRING"
+    },
+    customChains: [
+      {
+        network: 'base-goerli',
+        chainId: 84531,
+        urls: {
+          apiURL: 'https://api-goerli.basescan.org/api',
+          browserURL: 'https://goerli.basescan.org'
+        }
+      }
+    ]
   }
 };
 
