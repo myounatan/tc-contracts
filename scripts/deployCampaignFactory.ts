@@ -2,35 +2,37 @@ import hre, { ethers } from 'hardhat';
 
 import 'dotenv/config';
 import { verify } from '../utils';
-
-async function verifyLiveContract(contract: any, artifact: string, constructorArgs: any[]) {
-  if (hre.network.name !== 'localhost' && hre.network.name !== 'hardhat') {
-    await verify(hre, contract, artifact, constructorArgs);
-  }
-}
+import { verifyLiveContract } from './utils';
 
 async function main() {
-  const backendAdmin = process.env.DEV_ADDRESS;
+  const backendAdmin: any = process.env.DEV_ADDRESS;
+
+  let nonce = await ethers.provider.getTransactionCount(backendAdmin);
 
   // deploy admin beacon
 
-  let constructorArgs = [backendAdmin];
-  const adminBeacon = await ethers.deployContract('AdminBeacon', constructorArgs);
+  let constructorArgs: any = [backendAdmin];
+  const adminBeaconFactory = await ethers.getContractFactory('AdminBeacon');
+  const adminBeacon = await adminBeaconFactory.deploy(constructorArgs[0], {nonce: nonce++});
 
-  await adminBeacon.deployed();
+  // const adminBeacon = await ethers.deployContract('AdminBeacon', constructorArgs);
 
-  console.log('AdminBeacon deployed to:', adminBeacon.address);
+  await adminBeacon.waitForDeployment();
+
+  console.log('AdminBeacon deployed to:', await adminBeacon.getAddress());
 
   await verifyLiveContract(adminBeacon, 'contracts/admin/AdminBeacon.sol:AdminBeacon', constructorArgs);
 
   // deploy campaign factory
 
-  constructorArgs = [adminBeacon.address];
-  const campaignFactory = await ethers.deployContract('CampaignFactory', constructorArgs);
+  constructorArgs = [await adminBeacon.getAddress()];
+  const campaignFactoryFactory = await ethers.getContractFactory('CampaignFactory');
+  const campaignFactory = await campaignFactoryFactory.deploy(constructorArgs[0], {nonce: nonce++});
+  // const campaignFactory = await ethers.deployContract('CampaignFactory', constructorArgs);
 
-  await campaignFactory.deployed();
+  await campaignFactory.waitForDeployment();
 
-  console.log('\nCampaignFactory deployed to:', campaignFactory.address);
+  console.log('\nCampaignFactory deployed to:', await campaignFactory.getAddress());
 
   await verifyLiveContract(campaignFactory, 'contracts/CampaignFactory.sol:CampaignFactory', constructorArgs);
 
@@ -39,18 +41,20 @@ async function main() {
   const deployerNames = ['TwitterCampaignDeployer'];
   let deployers = [];
 
-  constructorArgs = [campaignFactory.address];
+  constructorArgs = [await campaignFactory.getAddress()];
 
   console.log('\nDeploying deployers...');
 
   for (const deployer of deployerNames) {
-    const deployerContract = await ethers.deployContract(deployer, constructorArgs);
+    // const deployerContract = await ethers.deployContract(deployer, constructorArgs);
+    const deployerContractFactory = await ethers.getContractFactory(deployer);
+    const deployerContract = await deployerContractFactory.deploy(constructorArgs[0], {nonce: nonce++});
 
-    await deployerContract.deployed();
+    await deployerContract.waitForDeployment();
 
     deployers.push(deployerContract);
 
-    console.log(`${deployer} deployed to:`, deployerContract.address);
+    console.log(`${deployer} deployed to:`, await deployerContract.getAddress());
 
     await verifyLiveContract(deployerContract, `contracts/deployers/${deployer}.sol:${deployer}`, constructorArgs);
   }

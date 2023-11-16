@@ -58,7 +58,7 @@ abstract contract BaseCampaign is Ownable, Pausable, ReentrancyGuard {
 
     address public creator; // also campaign owner
 
-    bool isSetup = false;
+    bool public isSetup = false;
 
     CampaignLib.CampaignType public campaignType;
 

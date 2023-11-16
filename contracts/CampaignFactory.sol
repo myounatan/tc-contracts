@@ -11,9 +11,6 @@ import "./deployers/IBaseDeployer.sol";
 
 import "./admin/IAdminBeacon.sol";
 
-import "./campaigns/TwitterCampaign.sol";
-import "./campaigns/DiscordCampaign.sol";
-
 // import "hardhat/console.sol";
 
 contract CampaignFactory is Ownable, ReentrancyGuard {
@@ -35,9 +32,11 @@ contract CampaignFactory is Ownable, ReentrancyGuard {
     // events
 
     event CampaignCreated(
-        address indexed contractAddress,
-        uint256 indexed campaignId,
-        CampaignLib.CampaignType indexed campaignType
+        address indexed deployerAddress,
+        address indexed campaignAddress,
+        address indexed creator,
+        CampaignLib.CampaignType campaignType,
+        uint256 campaignId
     );
 
     // errors
@@ -61,7 +60,9 @@ contract CampaignFactory is Ownable, ReentrancyGuard {
     // internal functions
 
     function _recordNewCampaign(
+        IBaseDeployer _deployer,
         address _contractAddress,
+        address _creator,
         CampaignLib.CampaignType _campaignType
     ) internal returns (CampaignContract memory) {
         uint256 campaignId = numCampaigns++;
@@ -74,7 +75,13 @@ contract CampaignFactory is Ownable, ReentrancyGuard {
 
         campaigns.push(newCampaign);
 
-        emit CampaignCreated(_contractAddress, campaignId, _campaignType);
+        emit CampaignCreated(
+            address(_deployer),
+            _contractAddress,
+            _creator,
+            _campaignType,
+            campaignId
+        );
 
         return newCampaign;
     }
@@ -82,32 +89,42 @@ contract CampaignFactory is Ownable, ReentrancyGuard {
     // admin only functions
 
     function deployTwitterCampaign(
-        address _creator,
         IBaseDeployer _deployer
     ) external nonReentrant {
+        address creator = msg.sender;
         uint256 campaignId = numCampaigns;
 
         address contractAddress = _deployer.deployCampaign(
             campaignId,
-            _creator,
+            creator,
             adminBeacon
         );
 
-        _recordNewCampaign(contractAddress, CampaignLib.CampaignType.TWITTER);
+        _recordNewCampaign(
+            _deployer,
+            contractAddress,
+            creator,
+            CampaignLib.CampaignType.TWITTER
+        );
     }
 
     function deployDiscordCampaign(
-        address _creator,
         IBaseDeployer _deployer
     ) external nonReentrant {
+        address creator = msg.sender;
         uint256 campaignId = numCampaigns;
 
         address contractAddress = _deployer.deployCampaign(
             campaignId,
-            _creator,
+            creator,
             adminBeacon
         );
 
-        _recordNewCampaign(contractAddress, CampaignLib.CampaignType.DISCORD);
+        _recordNewCampaign(
+            _deployer,
+            contractAddress,
+            creator,
+            CampaignLib.CampaignType.DISCORD
+        );
     }
 }
