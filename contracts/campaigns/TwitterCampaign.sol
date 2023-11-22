@@ -73,6 +73,8 @@ contract TwitterCampaign is BaseCampaign {
     );
 
     event TwitterCampaignRewardClaimed(
+        RewardType indexed rewardType,
+        address tokenAddress,
         uint256 indexed campaignId,
         address indexed wallet,
         uint256 tweetId,
@@ -164,7 +166,31 @@ contract TwitterCampaign is BaseCampaign {
         );
     }
 
-    // function setupERC20(...) external payable onlyOwner setupOnce
+    function setupERC20(
+        address _tokenAddress,
+        CampaignInfo memory _campaignInfo,
+        string memory _rewardString,
+        uint256 _ownerTwitterUserId,
+        string memory _tweetString,
+        TweetRewardInfo[] memory _tweetRewardInfo,
+        TwitterSecurityInfo[] memory _twitterSecurityInfo
+    ) external onlyOwner setupOnce {
+        rewardInfo.rewardToken = RewardToken({
+            rewardType: RewardType.ERC20,
+            tokenAddress: _tokenAddress
+        });
+
+        // rewardInfo.rewardsLeft = msg.value; // must deposit separately
+
+        _setup(
+            _campaignInfo,
+            _tweetString,
+            _ownerTwitterUserId,
+            _rewardString,
+            _tweetRewardInfo,
+            _twitterSecurityInfo
+        );
+    }
 
     function claimRewardNativeTo(
         address participant,
@@ -180,6 +206,33 @@ contract TwitterCampaign is BaseCampaign {
         lastTweetInfoRewarded[_tweetId] = _currentTweetInfo;
 
         emit TwitterCampaignRewardClaimed(
+            RewardType.NATIVE,
+            address(0),
+            campaignId,
+            participant,
+            _tweetId,
+            _tokensRewarded,
+            _rewardedTweetInfo,
+            _rewardStringUsed
+        );
+    }
+
+    function claimRewardERC20To(
+        address participant,
+        uint256 _tweetId,
+        TweetInfo memory _currentTweetInfo,
+        TweetInfo memory _rewardedTweetInfo,
+        uint256 _tokensRewarded,
+        string memory _rewardStringUsed
+    ) public nonReentrant onlyAdmin {
+        _rewardERC20(participant, _tokensRewarded);
+
+        // update tweet info
+        lastTweetInfoRewarded[_tweetId] = _currentTweetInfo;
+
+        emit TwitterCampaignRewardClaimed(
+            RewardType.ERC20,
+            rewardInfo.rewardToken.tokenAddress,
             campaignId,
             participant,
             _tweetId,

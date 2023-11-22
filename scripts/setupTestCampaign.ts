@@ -3,7 +3,7 @@ import hre, { ethers } from 'hardhat';
 import 'dotenv/config';
 import { CONVERT_WEI, verify } from '../utils';
 
-const TWITTER_CAMPAIGN_ADDRESS = '0x132fabf953b7c943ff2817af583a6f3345ac20e7';
+const TWITTER_CAMPAIGN_ADDRESS = '0x3fd0fC23646aD18FcCd6C7C8DA40Dec799462009';
 
 enum TwitterRewardMetric {
   LIKES,

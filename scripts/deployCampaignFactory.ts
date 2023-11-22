@@ -5,9 +5,13 @@ import { verify } from '../utils';
 import { verifyLiveContract } from './utils';
 
 async function main() {
-  const backendAdmin: any = process.env.DEV_ADDRESS;
+  const accounts = await ethers.getSigners();
+  const deployer = accounts[0];
+  const deployerAddress = await deployer.getAddress();
 
-  let nonce = await ethers.provider.getTransactionCount(backendAdmin);
+  const backendAdmin: any = process.env.BACKEND_ADMIN_ADDRESS;
+
+  let nonce = await ethers.provider.getTransactionCount(deployerAddress);
 
   // deploy admin beacon
 
