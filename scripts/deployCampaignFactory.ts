@@ -23,13 +23,15 @@ async function main() {
 
   await adminBeacon.waitForDeployment();
 
-  console.log('AdminBeacon deployed to:', await adminBeacon.getAddress());
+  const adminBeaconAddress = await adminBeacon.getAddress();
+
+  console.log('AdminBeacon deployed to:', adminBeaconAddress);
 
   await verifyLiveContract(adminBeacon, 'contracts/admin/AdminBeacon.sol:AdminBeacon', constructorArgs);
 
   // deploy campaign factory
 
-  constructorArgs = [await adminBeacon.getAddress()];
+  constructorArgs = [adminBeaconAddress];
   const campaignFactoryFactory = await ethers.getContractFactory('CampaignFactory');
   const campaignFactory = await campaignFactoryFactory.deploy(constructorArgs[0], {nonce: nonce++});
   // const campaignFactory = await ethers.deployContract('CampaignFactory', constructorArgs);
@@ -62,6 +64,18 @@ async function main() {
 
     await verifyLiveContract(deployerContract, `contracts/deployers/${deployer}.sol:${deployer}`, constructorArgs);
   }
+
+  // deploy test usd token
+
+  constructorArgs = [adminBeaconAddress];
+  const testUSDFactory = await ethers.getContractFactory('TestUSD');
+  const testUSD = await testUSDFactory.deploy(constructorArgs[0], {nonce: nonce++});
+
+  await testUSD.waitForDeployment();
+
+  console.log('\nTestUSD deployed to:', await testUSD.getAddress());
+
+  await verifyLiveContract(testUSD, 'contracts/testnet/TestUSD.sol:TestUSD', constructorArgs);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

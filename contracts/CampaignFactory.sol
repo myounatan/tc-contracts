@@ -89,41 +89,41 @@ contract CampaignFactory is Ownable, ReentrancyGuard {
     // admin only functions
 
     function deployTwitterCampaign(
+        address _creator,
         IBaseDeployer _deployer
-    ) external nonReentrant {
-        address creator = msg.sender;
+    ) external nonReentrant onlyAdmin {
         uint256 campaignId = numCampaigns;
 
         address contractAddress = _deployer.deployCampaign(
             campaignId,
-            creator,
+            _creator,
             adminBeacon
         );
 
         _recordNewCampaign(
             _deployer,
             contractAddress,
-            creator,
+            _creator,
             CampaignLib.CampaignType.TWITTER
         );
     }
 
     function deployDiscordCampaign(
+        address _creator,
         IBaseDeployer _deployer
-    ) external nonReentrant {
-        address creator = msg.sender;
+    ) external nonReentrant onlyAdmin {
         uint256 campaignId = numCampaigns;
 
         address contractAddress = _deployer.deployCampaign(
             campaignId,
-            creator,
+            _creator,
             adminBeacon
         );
 
         _recordNewCampaign(
             _deployer,
             contractAddress,
-            creator,
+            _creator,
             CampaignLib.CampaignType.DISCORD
         );
     }

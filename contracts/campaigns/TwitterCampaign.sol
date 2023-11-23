@@ -148,13 +148,13 @@ contract TwitterCampaign is BaseCampaign {
         string memory _tweetString,
         TweetRewardInfo[] memory _tweetRewardInfo,
         TwitterSecurityInfo[] memory _twitterSecurityInfo
-    ) external payable onlyOwner setupOnce {
+    ) external onlyAdmin setupOnce {
         rewardInfo.rewardToken = RewardToken({
             rewardType: RewardType.NATIVE,
             tokenAddress: address(0)
         });
 
-        rewardInfo.rewardsLeft = msg.value;
+        // rewardInfo.rewardsLeft = msg.value;
 
         _setup(
             _campaignInfo,
@@ -174,7 +174,7 @@ contract TwitterCampaign is BaseCampaign {
         string memory _tweetString,
         TweetRewardInfo[] memory _tweetRewardInfo,
         TwitterSecurityInfo[] memory _twitterSecurityInfo
-    ) external onlyOwner setupOnce {
+    ) external onlyAdmin setupOnce {
         rewardInfo.rewardToken = RewardToken({
             rewardType: RewardType.ERC20,
             tokenAddress: _tokenAddress
