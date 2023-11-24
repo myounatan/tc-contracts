@@ -26,6 +26,8 @@ async function main() {
   const adminBeaconAddress = await adminBeacon.getAddress();
 
   console.log('AdminBeacon deployed to:', adminBeaconAddress);
+  console.log('- owner:', deployerAddress);
+  console.log('- admin:', backendAdmin);
 
   await verifyLiveContract(adminBeacon, 'contracts/admin/AdminBeacon.sol:AdminBeacon', constructorArgs);
 

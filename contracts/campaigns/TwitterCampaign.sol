@@ -94,6 +94,79 @@ contract TwitterCampaign is BaseCampaign {
         campaignType = CampaignLib.CampaignType.TWITTER;
     }
 
+    function getTwitterCampaignInfo()
+        external
+        view
+        returns (
+            uint256,
+            address,
+            CampaignState,
+            CampaignInfo memory,
+            RewardInfo memory,
+            uint256,
+            string memory,
+            TweetRewardInfo[] memory,
+            TwitterSecurityInfo[] memory
+        )
+    {
+        uint256 twitterSecurityInfoCount = 0;
+        for (uint256 i = 0; i < 5; i++) {
+            if (securityInfo[TwitterSecurityMetric(i)] > 0) {
+                twitterSecurityInfoCount++;
+            }
+        }
+        TwitterSecurityInfo[]
+            memory getTwitterSecurityInfo = new TwitterSecurityInfo[](
+                twitterSecurityInfoCount
+            );
+
+        uint256 twitterSecurityInfoIndex = 0;
+        for (uint256 i = 0; i < 5; i++) {
+            if (securityInfo[TwitterSecurityMetric(i)] > 0) {
+                getTwitterSecurityInfo[
+                    twitterSecurityInfoIndex
+                ] = TwitterSecurityInfo(
+                    TwitterSecurityMetric(i),
+                    securityInfo[TwitterSecurityMetric(i)]
+                );
+                twitterSecurityInfoIndex++;
+            }
+        }
+
+        uint256 tweetRewardInfoCount = 0;
+        for (uint256 i = 0; i < 5; i++) {
+            if (tokensPerMetric[TwitterRewardMetric(i)] > 0) {
+                tweetRewardInfoCount++;
+            }
+        }
+        TweetRewardInfo[] memory getTweetRewardInfo = new TweetRewardInfo[](
+            tweetRewardInfoCount
+        );
+
+        uint256 tweetRewardInfoIndex = 0;
+        for (uint256 i = 0; i < 5; i++) {
+            if (tokensPerMetric[TwitterRewardMetric(i)] > 0) {
+                getTweetRewardInfo[tweetRewardInfoIndex] = TweetRewardInfo(
+                    TwitterRewardMetric(i),
+                    tokensPerMetric[TwitterRewardMetric(i)]
+                );
+                tweetRewardInfoIndex++;
+            }
+        }
+
+        return (
+            campaignId,
+            creator,
+            getState(),
+            campaignInfo,
+            rewardInfo,
+            ownerUserId,
+            tweetString,
+            getTweetRewardInfo,
+            getTwitterSecurityInfo
+        );
+    }
+
     // owner setup
 
     function _setup(
