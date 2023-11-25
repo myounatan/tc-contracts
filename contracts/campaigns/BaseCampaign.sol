@@ -182,7 +182,7 @@ abstract contract BaseCampaign is Ownable, Pausable, ReentrancyGuard {
         // send tokens to user
         IERC20 token = IERC20(rewardInfo.rewardToken.tokenAddress);
 
-        token.transferFrom(address(this), participant, _tokensRewarded);
+        token.transfer(participant, _tokensRewarded);
     }
 
     function _withdrawNativeAmountTo(
@@ -199,7 +199,7 @@ abstract contract BaseCampaign is Ownable, Pausable, ReentrancyGuard {
     ) internal virtual nonZeroAmount(_amount) {
         IERC20 token = IERC20(rewardInfo.rewardToken.tokenAddress);
 
-        token.transferFrom(address(this), _to, _amount);
+        token.transfer(_to, _amount);
     }
 
     function _endCampaignIfFundsZero() internal virtual {
@@ -288,6 +288,7 @@ abstract contract BaseCampaign is Ownable, Pausable, ReentrancyGuard {
         _endCampaignIfFundsZero();
     }
 
+    // requires approval from erc20 token first!!
     function depositERC20(
         uint256 _amount
     ) public virtual onlyCreator nonZeroAmount(_amount) {
