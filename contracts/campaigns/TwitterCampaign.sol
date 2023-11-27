@@ -231,9 +231,9 @@ contract TwitterCampaign is BaseCampaign {
 
         _setup(
             _campaignInfo,
-            _tweetString,
-            _ownerTwitterUserId,
             _rewardString,
+            _ownerTwitterUserId,
+            _tweetString,
             _tweetRewardInfo,
             _twitterSecurityInfo
         );
@@ -257,9 +257,9 @@ contract TwitterCampaign is BaseCampaign {
 
         _setup(
             _campaignInfo,
-            _tweetString,
-            _ownerTwitterUserId,
             _rewardString,
+            _ownerTwitterUserId,
+            _tweetString,
             _tweetRewardInfo,
             _twitterSecurityInfo
         );
