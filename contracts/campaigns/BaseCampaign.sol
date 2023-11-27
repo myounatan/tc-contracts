@@ -35,7 +35,7 @@ abstract contract BaseCampaign is Ownable, Pausable, ReentrancyGuard {
     // campaign info
 
     struct RewardInfo {
-        uint256 rewardsLeft;
+        // uint256 rewardsLeft;
         uint256 totalRewardsGiven;
         RewardToken rewardToken;
         string rewardString; // ex. "0.001 * a1 + 0.002 * a2" where a1 and a2 are the first two twitter reward metrics
@@ -144,16 +144,25 @@ abstract contract BaseCampaign is Ownable, Pausable, ReentrancyGuard {
         rewardInfo.rewardString = _rewardString;
     }
 
+    function _rewardsLeft() internal view virtual returns (uint256) {
+        if (rewardInfo.rewardToken.rewardType == RewardType.NATIVE) {
+            return address(this).balance;
+        } else {
+            IERC20 token = IERC20(rewardInfo.rewardToken.tokenAddress);
+
+            return token.balanceOf(address(this));
+        }
+    }
+
     function _processReward(
         address participant,
         uint256 _tokensRewarded
     ) internal virtual {
         // check if there are enough tokens left to reward
-        if (_tokensRewarded > rewardInfo.rewardsLeft)
-            revert NotEnoughRewardsLeft();
+        if (_tokensRewarded > _rewardsLeft()) revert NotEnoughRewardsLeft();
 
         // update campaign state
-        rewardInfo.rewardsLeft -= _tokensRewarded;
+        // rewardInfo.rewardsLeft -= _tokensRewarded;
         rewardInfo.totalRewardsGiven += _tokensRewarded;
 
         // update user state
@@ -203,7 +212,7 @@ abstract contract BaseCampaign is Ownable, Pausable, ReentrancyGuard {
     }
 
     function _endCampaignIfFundsZero() internal virtual {
-        if (rewardInfo.rewardsLeft == 0) {
+        if (_rewardsLeft() == 0) {
             campaignInfo.endTime = block.timestamp;
         }
     }
@@ -241,17 +250,22 @@ abstract contract BaseCampaign is Ownable, Pausable, ReentrancyGuard {
         return campaignInfo;
     }
 
-    function getRewardInfo() public view virtual returns (RewardInfo memory) {
-        return rewardInfo;
+    function getRewardInfo()
+        public
+        view
+        virtual
+        returns (RewardInfo memory, uint256)
+    {
+        return (rewardInfo, _rewardsLeft());
     }
 
     function getFullState()
         public
         view
         virtual
-        returns (CampaignState, CampaignInfo memory, RewardInfo memory)
+        returns (CampaignState, CampaignInfo memory, RewardInfo memory, uint256)
     {
-        return (getState(), campaignInfo, rewardInfo);
+        return (getState(), campaignInfo, rewardInfo, _rewardsLeft());
     }
 
     // public onlyCreator
@@ -270,8 +284,7 @@ abstract contract BaseCampaign is Ownable, Pausable, ReentrancyGuard {
         nonZeroAmount(msg.value)
     {
         // TODO: if campaign is over, don't allow deposits
-
-        rewardInfo.rewardsLeft += msg.value;
+        // rewardInfo.rewardsLeft += msg.value;
     }
 
     function withdrawNative(
@@ -296,7 +309,7 @@ abstract contract BaseCampaign is Ownable, Pausable, ReentrancyGuard {
 
         token.transferFrom(msg.sender, address(this), _amount);
 
-        rewardInfo.rewardsLeft += _amount;
+        // rewardInfo.rewardsLeft += _amount;
     }
 
     function withdrawERC20(

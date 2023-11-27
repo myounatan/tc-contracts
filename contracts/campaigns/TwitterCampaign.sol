@@ -106,7 +106,8 @@ contract TwitterCampaign is BaseCampaign {
             uint256,
             string memory,
             TweetRewardInfo[] memory,
-            TwitterSecurityInfo[] memory
+            TwitterSecurityInfo[] memory,
+            uint256
         )
     {
         uint256 twitterSecurityInfoCount = 0;
@@ -163,7 +164,8 @@ contract TwitterCampaign is BaseCampaign {
             ownerUserId,
             tweetString,
             getTweetRewardInfo,
-            getTwitterSecurityInfo
+            getTwitterSecurityInfo,
+            _rewardsLeft()
         );
     }
 
@@ -205,7 +207,7 @@ contract TwitterCampaign is BaseCampaign {
             campaignType,
             creator,
             campaignInfo,
-            rewardInfo.rewardsLeft,
+            _rewardsLeft(),
             rewardInfo.rewardToken,
             ownerUserId,
             tweetString,
